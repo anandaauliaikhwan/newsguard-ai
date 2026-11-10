@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>NewsGuard AI - Deteksi Berita Hoax</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f4f6fb;
+        color: #182238;
+        min-height: 100vh;
+      }
+
+      .navbar {
+        background: #111a2e;
+        color: white;
+        padding: 18px 7%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand-icon {
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, #536dfe, #8c61ef);
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 22px;
+      }
+
+      .brand h2 {
+        font-size: 19px;
+        letter-spacing: 1px;
+      }
+
+      .brand p {
+        font-size: 11px;
+        color: #aab5ca;
+        margin-top: 3px;
+      }
+
+      .status {
+        color: #8ce0b8;
+        font-size: 12px;
+        font-weight: 600;
+        background: #203c39;
+        padding: 8px 13px;
+        border-radius: 20px;
+      }
+
+      .main {
+        max-width: 1150px;
+        margin: 45px auto;
+        padding: 0 25px;
+      }
+
+      .hero {
+        text-align: center;
+        margin-bottom: 35px;
+      }
+
+      .hero-label {
+        color: #596fe0;
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        margin-bottom: 12px;
+      }
+
+      .hero h1 {
+        font-size: 34px;
+        color: #17233d;
+        margin-bottom: 12px;
+      }
+
+      .hero p {
+        color: #78849a;
+        font-size: 15px;
+        line-height: 1.7;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 22px;
+        align-items: start;
+      }
+
+      .card {
+        background: white;
+        border-radius: 16px;
+        padding: 27px;
+        box-shadow: 0 5px 25px rgba(28, 43, 77, 0.06);
+        border: 1px solid #e9edf5;
+      }
+
+      .section-title {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .section-desc {
+        color: #8791a5;
+        font-size: 13px;
+        margin-bottom: 23px;
+        line-height: 1.6;
+      }
+
+      .model-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 25px;
+      }
+
+      .model-option input {
+        display: none;
+      }
+
+      .model-label {
+        display: block;
+        border: 2px solid #e8ecf4;
+        border-radius: 12px;
+        padding: 17px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+
+      .model-label:hover {
+        border-color: #9ba9ef;
+      }
+
+      .model-option input:checked + .model-label {
+        border-color: #596fe0;
+        background: #f2f4ff;
+      }
+
+      .model-icon {
+        font-size: 23px;
+        margin-bottom: 10px;
+      }
+
+      .model-label strong {
+        display: block;
+        font-size: 15px;
+        margin-bottom: 5px;
+      }
+
+      .model-label small {
+        color: #8791a5;
+        font-size: 11px;
+      }
+
+      .model-check {
+        display: none;
+        color: #596fe0;
+        font-size: 11px;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+
+      .model-option input:checked + .model-label .model-check {
+        display: block;
+      }
+
+      .field-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      textarea {
+        display: block;
+        width: 100%;
+        min-height: 230px;
+        padding: 16px;
+        resize: vertical;
+        border: 1px solid #e0e5ef;
+        border-radius: 11px;
+        font-family: inherit;
+        font-size: 14px;
+        line-height: 1.7;
+        color: #27334b;
+        outline: none;
+        transition: 0.2s;
+      }
+
+      textarea:focus {
+        border-color: #6678e8;
+        box-shadow: 0 0 0 3px rgba(102, 120, 232, 0.1);
+      }
+
+      textarea::placeholder {
+        color: #aab2c2;
+      }
+
+      .input-footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 9px;
+        color: #98a1b2;
+        font-size: 11px;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 10px;
+        margin-top: 23px;
+        background: linear-gradient(100deg, #536dfe, #805de9);
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+
+      .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 7px 18px rgba(83, 109, 254, 0.25);
+      }
+
+      .error {
+        background: #fff0f0;
+        color: #c43d3d;
+        padding: 13px;
+        border-radius: 9px;
+        font-size: 13px;
+        margin-top: 18px;
+      }
+
+      .result {
+        margin-top: 25px;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+      }
+
+      .result.hoax {
+        background: #fff0f0;
+        border: 1px solid #ffd4d4;
+        color: #c43d3d;
+      }
+
+      .result.valid {
+        background: #eafaf2;
+        border: 1px solid #c9efdb;
+        color: #21865a;
+      }
+
+      .result-label {
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        font-weight: bold;
+      }
+
+      .result h2 {
+        font-size: 27px;
+        margin: 9px 0;
+      }
+
+      .result p {
+        font-size: 12px;
+      }
+
+      .side-card {
+        background: #17233d;
+        color: white;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 18px;
+      }
+
+      .side-card h3 {
+        font-size: 15px;
+        margin-bottom: 17px;
+      }
+
+      .info-item {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 17px;
+        align-items: flex-start;
+      }
+
+      .info-icon {
+        background: #2a3857;
+        width: 35px;
+        height: 35px;
+        border-radius: 9px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+
+      .info-item strong {
+        font-size: 12px;
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      .info-item p {
+        font-size: 11px;
+        line-height: 1.5;
+        color: #aab5ca;
+      }
+
+      .side-note {
+        background: white;
+        border: 1px solid #e9edf5;
+        border-radius: 14px;
+        padding: 20px;
+      }
+
+      .side-note h3 {
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+
+      .side-note p {
+        color: #8490a5;
+        font-size: 12px;
+        line-height: 1.7;
+      }
+
+      footer {
+        text-align: center;
+        color: #98a1b2;
+        font-size: 11px;
+        padding: 25px;
+      }
+
+      @media (max-width: 800px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .hero h1 {
+          font-size: 27px;
+        }
+
+        .main {
+          margin-top: 30px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .navbar {
+          padding: 15px 5%;
+        }
+
+        .status {
+          font-size: 10px;
+          padding: 7px 9px;
+        }
+
+        .brand h2 {
+          font-size: 15px;
+        }
+
+        .brand p {
+          font-size: 9px;
+        }
+
+        .card {
+          padding: 19px;
+        }
+
+        .model-options {
+          gap: 9px;
+        }
+
+        .model-label {
+          padding: 12px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+      <div class="brand">
+        <div class="brand-icon">🛡️</div>
+
+        <div>
+          <h2>NEWSGUARD AI</h2>
+          <p>Indonesian News Classification System</p>
+        </div>
+      </div>
+
+      <div class="status">● SYSTEM READY</div>
+    </nav>
+
+    <main class="main">
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-label">ARTIFICIAL INTELLIGENCE SYSTEM</div>
+
+        <h1>Deteksi Berita Hoax</h1>
+
+        <p>Analisis dan klasifikasikan berita berbahasa Indonesia menggunakan teknologi Machine Learning dan Deep Learning.</p>
+      </section>
+
+      <div class="layout">
+        <!-- FORM -->
+        <section class="card">
+          <div class="section-title">Analisis Berita</div>
+
+          <p class="section-desc">Pilih model klasifikasi dan masukkan teks berita yang ingin dianalisis.</p>
+
+          <form method="POST">
+            <label class="field-label"> Pilih Model Klasifikasi </label>
+
+            <div class="model-options">
+              <label class="model-option">
+                <input type="radio" name="model" value="bert" />
+
+                <span class="model-label">
+                  <div class="model-icon">🧠</div>
+
+                  <strong>BERT</strong>
+
+                  <small> Contextual language model </small>
+
+                  <div class="model-check">✓ MODEL DIPILIH</div>
+                </span>
+              </label>
+
+              <label class="model-option">
+                <input type="radio" name="model" value="svm" />
+                <span class="model-label">
+                  <div class="model-icon">⚙️</div>
+
+                  <strong>SVM</strong>
+
+                  <small> TF-IDF classification </small>
+
+                  <div class="model-check">✓ MODEL DIPILIH</div>
+                </span>
+              </label>
+            </div>
+
+            <label class="field-label" for="news"> Teks Berita </label>
+
+            <textarea id="news" name="news" placeholder="Tempelkan teks berita yang ingin diklasifikasikan di sini..." required>{{ news_text }}</textarea>
+
+            <div class="input-footer">
+              <span>Masukkan teks berita berbahasa Indonesia</span>
+              <span id="char-count">0 karakter</span>
+            </div>
+
+            <button type="submit" class="submit-btn">🔍 &nbsp; Analisis Berita</button>
+          </form>
+
+          {% if error_message %}
+
+          <div class="error">⚠️ {{ error_message }}</div>
+
+          {% endif %} {% if prediction %}
+
+          <div class="result {% if prediction == 'Hoax' %}hoax{% else %}valid{% endif %}">
+            <div class="result-label">HASIL KLASIFIKASI</div>
+
+            <h2>{{ prediction|upper }}</h2>
+
+            <p>
+              Model yang digunakan:
+              <strong>{{ model_choice|upper }}</strong>
+            </p>
+          </div>
+
+          {% endif %}
+        </section>
+
+        <!-- SIDEBAR -->
+        <aside>
+          <div class="side-card">
+            <h3>Informasi Model</h3>
+
+            <div class="info-item">
+              <div class="info-icon">🧠</div>
+
+              <div>
+                <strong>BERT</strong>
+
+                <p>Model berbasis Transformer untuk memahami konteks teks.</p>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon">⚙️</div>
+
+              <div>
+                <strong>Support Vector Machine</strong>
+
+                <p>Algoritma klasifikasi dengan representasi fitur TF-IDF.</p>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon">📊</div>
+
+              <div>
+                <strong>Klasifikasi Biner</strong>
+
+                <p>Hasil klasifikasi terdiri dari dua kelas: Hoax dan Valid.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-note">
+            <h3>Bagaimana sistem bekerja?</h3>
+
+            <p>Sistem memproses teks berita menggunakan model yang dipilih. Model kemudian menghasilkan prediksi berdasarkan pola yang telah dipelajari selama proses pelatihan.</p>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <footer>
+      NEWSGUARD AI · Sistem Deteksi Berita Hoax
+      <br /><br />
+      Implementasi Machine Learning dan Deep Learning
+    </footer>
+
+    <script>
+      const newsInput = document.getElementById("news");
+      const charCount = document.getElementById("char-count");
+
+      function updateCount() {
+        charCount.textContent = newsInput.value.length + " karakter";
+      }
+
+      newsInput.addEventListener("input", updateCount);
+
+      updateCount();
+    </script>
+  </body>
+
+  <script>
+    const selectedModel = {{ model_choice | tojson }};
+
+    document.querySelectorAll('input[name="model"]').forEach(input => {
+        input.checked = input.value === selectedModel;
+    });
+  </script>
+</html>
